@@ -9,11 +9,11 @@ config APP_USB
   ---help---
     Say y if you want to embbed USB HID frontend.
 
-if APP_USBHID
+if APP_USB
 
 config APP_USB_FW
   bool "Usb App for firmware mode"
-  depends on APP_USBHID
+  depends on APP_USB
   depends on STM32F4
   default y
   ---help---
@@ -21,14 +21,14 @@ config APP_USB_FW
 
 config APP_USB_HEAPSIZE
   int "task heap size in bytes"
-  depends on APP_USBHID
+  depends on APP_USB
   default 1024
   ---help---
     specify the requested heap size in bytes.
 
 config APP_USB_STACKSIZE
   int "Stack size"
-  depends on APP_USBHID
+  depends on APP_USB
   default 8192
   ---help---
     Specify the application stack size, in bytes. By default, set to 8192
@@ -65,7 +65,7 @@ endchoice
 
 
 menu "Permissions"
-    visible if APP_USBHID
+    visible if APP_USB
 
 menu "Devices"
 
@@ -185,7 +185,7 @@ endmenu
 endmenu
 
 config APP_USB_DOMAIN
-    depends on APP_USBHID
+    depends on APP_USB
     int "USB app security domain"
     default 0
 

@@ -47,10 +47,10 @@ int _main(uint32_t task_id)
     printf("%s\n", wellcome_msg);
 
     /* initialize USB Control plane */
-#if CONFIG_APP_USBHID_USR_DRV_USB_HS
+#if CONFIG_APP_USB_USR_DRV_USB_HS
     printf("declare usbctrl context for HS\n");
     usbctrl_declare(USB_OTG_HS_ID, &usbxdci_handler);
-#elif CONFIG_APP_USBHID_USR_DRV_USB_FS
+#elif CONFIG_APP_USB_USR_DRV_USB_FS
     printf("declare usbctrl context for FS\n");
     usbctrl_declare(USB_OTG_FS_ID, &usbxdci_handler);
 #else
@@ -106,7 +106,6 @@ int _main(uint32_t task_id)
         }
     } while (1);
 
-err:
     printf("Going to error state!\n");
     aprintf_flush();
     return 1;
