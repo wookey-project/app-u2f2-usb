@@ -7,7 +7,7 @@
 #include "libc/regutils.h"
 #include "autoconf.h"
 #include "libusbctrl.h"
-#include "libkeyboard.h"
+#include "libfido.h"
 #include "generated/devlist.h"
 #include "main.h"
 
@@ -69,8 +69,7 @@ int _main(uint32_t task_id)
     /*
      * Let's declare a keyboard
      */
-    wmalloc_init();
-    keyboard_declare(usbxdci_handler);
+    fido_declare(usbxdci_handler);
 
     /*******************************************
      * End of init sequence, let's initialize devices
@@ -96,13 +95,14 @@ int _main(uint32_t task_id)
         aprintf_flush();
     }
     printf("Set configuration received\n");
+    fido_prepare_exec();
 
     /* let's talk :-) */
     /* init report with empty content */
     do {
         while (!reset_requested) {
             //hid_exec_automaton();
-            keyboard_exec();
+            fido_exec();
         }
     } while (1);
 
