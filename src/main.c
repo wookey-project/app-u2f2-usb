@@ -7,7 +7,10 @@
 #include "libc/regutils.h"
 #include "autoconf.h"
 #include "libusbctrl.h"
+#include "libusbhid.h"
+#include "libu2fapdu.h"
 #include "libfido.h"
+#include "libctap.h"
 #include "generated/devlist.h"
 #include "main.h"
 
@@ -69,7 +72,14 @@ int _main(uint32_t task_id)
     /*
      * Let's declare a keyboard
      */
-    fido_declare(usbxdci_handler);
+    //fido_declare(usbxdci_handler);
+
+    /* FIXME: by now, directly pass U2FAPDU cmd handling (one task mechanism) */
+    ctap_declare(usbxdci_handler, u2fapdu_handle_cmd);
+    u2fapdu_register_callback(u2f_fido_handle_cmd);
+
+    ctap_configure();
+
 
     /*******************************************
      * End of init sequence, let's initialize devices
@@ -95,14 +105,14 @@ int _main(uint32_t task_id)
         aprintf_flush();
     }
     printf("Set configuration received\n");
-    fido_prepare_exec();
+    ctap_prepare_exec();
 
     /* let's talk :-) */
     /* init report with empty content */
     do {
         while (!reset_requested) {
             //hid_exec_automaton();
-            fido_exec();
+            ctap_exec();
         }
     } while (1);
 
