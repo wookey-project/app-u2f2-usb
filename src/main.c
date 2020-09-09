@@ -105,7 +105,6 @@ int _main(uint32_t task_id)
         aprintf_flush();
     }
     printf("Set configuration received\n");
-    ctap_prepare_exec();
 
     /* let's talk :-) */
     /* init report with empty content */
