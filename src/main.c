@@ -78,7 +78,6 @@ int _main(uint32_t task_id)
     ctap_declare(usbxdci_handler, u2fapdu_handle_cmd);
     u2fapdu_register_callback(u2f_fido_handle_cmd);
 
-    ctap_configure();
 
 
     /*******************************************
@@ -104,6 +103,7 @@ int _main(uint32_t task_id)
     while (!conf_set) {
         aprintf_flush();
     }
+    ctap_configure();
     printf("Set configuration received\n");
 
     /* let's talk :-) */
