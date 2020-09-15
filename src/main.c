@@ -74,6 +74,15 @@ static void wink_down(void)
     }
 }
 
+static mbed_error_t handle_wink(uint16_t timeout_ms)
+{
+    wink_up();
+    waitfor(timeout_ms);
+    wink_down();
+
+    return MBED_ERROR_NONE;
+}
+
 
 static mbed_error_t declare_userpresence_backend(void)
 {
@@ -137,7 +146,6 @@ bool userpresence_backend(uint16_t timeout)
     wink_up();
     printf("[USB] userpresence: waiting for %d ms\n", timeout/2);
     sys_sleep (timeout, SLEEP_MODE_INTERRUPTIBLE);
-//    waitfor(timeout);
     if (button_pushed == true) {
         printf("[USB] button pushed !!!\n");
         wink_down();
@@ -183,10 +191,10 @@ int _main(uint32_t task_id)
     //fido_declare(usbxdci_handler);
 
     /* FIXME: by now, directly pass U2FAPDU cmd handling (one task mechanism) */
-    ctap_declare(usbxdci_handler, u2fapdu_handle_cmd);
+    ctap_declare(usbxdci_handler, u2fapdu_handle_cmd, handle_wink);
     u2fapdu_register_callback(u2f_fido_handle_cmd);
     /* TODO callbacks protection */
-    u2f_fido_initialize(userpresence_backend, NULL);
+    u2f_fido_initialize(userpresence_backend);
 
 
 
