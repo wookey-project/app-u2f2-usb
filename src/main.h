@@ -2,5 +2,6 @@
 #define MAIN_H_
 
 
+int get_fido_msq(void);
 
 #endif/*MAIN_H_*/
