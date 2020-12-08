@@ -123,7 +123,6 @@ int _main(uint32_t task_id)
     }
     ctap_configure();
     printf("Set configuration received\n");
-
     /* let's talk :-) */
     /* init report with empty content */
     do {
