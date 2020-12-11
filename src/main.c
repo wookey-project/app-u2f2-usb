@@ -121,6 +121,9 @@ int _main(uint32_t task_id)
     while (!conf_set) {
         aprintf_flush();
     }
+    /* TODO: reimplement malloc properly ! */
+    wmalloc_init();
+
     ctap_configure();
     printf("Set configuration received\n");
     /* let's talk :-) */
