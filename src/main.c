@@ -162,6 +162,7 @@ int _main(uint32_t task_id)
     uint8_t ret;
 
     printf("%s\n", wellcome_msg);
+    wmalloc_init();
 
     /* initialize USB Control plane */
 #if CONFIG_APP_USB_USR_DRV_USB_HS
