@@ -21,7 +21,6 @@
 #include "handlers.h"
 
 
-
 /* libusbctrl specific triggers and contexts */
 
 /* let's declare keyboard collection
@@ -51,10 +50,39 @@ void usbctrl_configuration_set(void)
 
 
 int fido_msq = 0;
+int pin_msq = 0;
 
 int get_fido_msq(void) {
     return fido_msq;
 }
+int get_pin_msq(void) {
+    return pin_msq;
+}
+
+
+
+/*
+ * Synchronously (waiting) requesting PIN for a given purpose, and wait for a specific
+ * response.
+ */
+mbed_error_t request_confirmation_from_pin(uint32_t req, uint32_t resp)
+{
+    mbed_error_t errcode = MBED_ERROR_NONE;
+    int pin_msq = get_pin_msq();
+    struct msgbuf msgbuf;
+    size_t msgsz = 0;
+
+    msgbuf.mtype = req;
+
+    /* syncrhonously send wink request */
+    msgsnd(pin_msq, &msgbuf, 0, 0);
+    /* and wait for response */
+    msgrcv(pin_msq, &msgbuf.mtext, msgsz, resp, 0);
+
+    return errcode;
+}
+
+
 
 int _main(uint32_t task_id)
 {
@@ -84,10 +112,16 @@ int _main(uint32_t task_id)
         printf("error while requesting SysV message queue. Errno=%x\n", errno);
         goto err;
     }
+    pin_msq = msgget("u2fpin", IPC_CREAT | IPC_EXCL);
+    if (pin_msq == -1) {
+        printf("error while requesting SysV message queue. Errno=%x\n", errno);
+        goto err;
+    }
 
     ret = sys_init(INIT_DONE);
     if (ret != 0) {
         printf("failure while leaving init mode !!! err:%d\n", ret);
+        goto err;
     }
     printf("sys_init DONE returns %x !\n", ret);
 
@@ -100,7 +134,18 @@ int _main(uint32_t task_id)
     ctap_declare(usbxdci_handler, u2fapdu_handle_cmd, handle_wink);
 
     /*******************************************
-     * End of init sequence, let's initialize devices
+     * End of init sequence, let's wait for user auth
+     *******************************************/
+
+
+    if (request_confirmation_from_pin(MAGIC_PIN_CONFIRM_UNLOCK, MAGIC_PIN_UNLOCK_CONFIRMED) != MBED_ERROR_NONE) {
+        printf("failed while requesting PIN for confirm unlock! erro=%d\n", errno);
+        goto err;
+    }
+    /* ==> user has unlock the platform now */
+
+    /*******************************************
+     * End of auth, let's initialize USB
      *******************************************/
 
     /* Start USB device */
