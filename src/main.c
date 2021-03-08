@@ -7,6 +7,7 @@
 #include "libc/regutils.h"
 #include "libc/sys/msg.h"
 #include "libc/errno.h"
+#include "libu2f2.h"
 #include "autoconf.h"
 #include "libusbctrl.h"
 #include "libusbhid.h"
@@ -49,40 +50,11 @@ void usbctrl_configuration_set(void)
 }
 
 
-int fido_msq = 0;
-int pin_msq = 0;
+int parser_msq = 0;
 
-int get_fido_msq(void) {
-    return fido_msq;
+int get_parser_msq(void) {
+    return parser_msq;
 }
-int get_pin_msq(void) {
-    return pin_msq;
-}
-
-
-
-/*
- * Synchronously (waiting) requesting PIN for a given purpose, and wait for a specific
- * response.
- */
-mbed_error_t request_confirmation_from_pin(uint32_t req, uint32_t resp)
-{
-    mbed_error_t errcode = MBED_ERROR_NONE;
-    int pin_msq = get_pin_msq();
-    struct msgbuf msgbuf;
-    size_t msgsz = 0;
-
-    msgbuf.mtype = req;
-
-    /* syncrhonously send wink request */
-    msgsnd(pin_msq, &msgbuf, 0, 0);
-    /* and wait for response */
-    msgrcv(pin_msq, &msgbuf.mtext, msgsz, resp, 0);
-
-    return errcode;
-}
-
-
 
 int _main(uint32_t task_id)
 {
@@ -106,18 +78,12 @@ int _main(uint32_t task_id)
     printf("initialize usbctrl with handler %d\n", usbxdci_handler);
     usbctrl_initialize(usbxdci_handler);
 
-    printf("initialize Posix SystemV message queue with Fido task\n");
-    fido_msq = msgget("fido", IPC_CREAT | IPC_EXCL);
-    if (fido_msq == -1) {
+    printf("initialize Posix SystemV message queue with parser task\n");
+    parser_msq = msgget("parser", IPC_CREAT | IPC_EXCL);
+    if (parser_msq == -1) {
         printf("error while requesting SysV message queue. Errno=%x\n", errno);
         goto err;
     }
-    pin_msq = msgget("u2fpin", IPC_CREAT | IPC_EXCL);
-    if (pin_msq == -1) {
-        printf("error while requesting SysV message queue. Errno=%x\n", errno);
-        goto err;
-    }
-
     ret = sys_init(INIT_DONE);
     if (ret != 0) {
         printf("failure while leaving init mode !!! err:%d\n", ret);
@@ -128,21 +94,19 @@ int _main(uint32_t task_id)
     /*
      * Let's declare a keyboard
      */
-    //fido_declare(usbxdci_handler);
-
-    /* FIXME: by now, directly pass U2FAPDU cmd handling (one task mechanism) */
     ctap_declare(usbxdci_handler, u2fapdu_handle_cmd, handle_wink);
 
     /*******************************************
-     * End of init sequence, let's wait for user auth
+     * End of init sequence, let's wait for backend
      *******************************************/
 
 
-    if (request_confirmation_from_pin(MAGIC_PIN_CONFIRM_UNLOCK, MAGIC_PIN_UNLOCK_CONFIRMED) != MBED_ERROR_NONE) {
+    if (send_signal_with_acknowledge(parser_msq, MAGIC_IS_BACKEND_READY, MAGIC_BACKEND_IS_READY) != MBED_ERROR_NONE) {
         printf("failed while requesting PIN for confirm unlock! erro=%d\n", errno);
         goto err;
     }
-    /* ==> user has unlock the platform now */
+
+    /* ==> user has unlock the platform, backend is fully ready */
 
     /*******************************************
      * End of auth, let's initialize USB
