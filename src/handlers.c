@@ -21,7 +21,7 @@
 mbed_error_t handle_wink(uint16_t timeout_ms)
 {
     mbed_error_t errcode = MBED_ERROR_NONE;
-    int fido_msq = get_fido_msq();
+    int fido_msq = get_parser_msq();
     struct msgbuf msgbuf;
     size_t msgsz = 64;
 
@@ -40,7 +40,7 @@ mbed_error_t handle_wink(uint16_t timeout_ms)
 mbed_error_t u2fapdu_handle_cmd(uint32_t metadata, uint8_t *buf, uint16_t buf_len, uint8_t *resp, uint16_t *resp_len)
 {
     mbed_error_t errcode = MBED_ERROR_NONE;
-    int fido_msq = get_fido_msq();
+    int fido_msq = get_parser_msq();
     int ret;
     struct msgbuf msgbuf;
     size_t msgsz = 64; /* max msg buf size */
