@@ -54,7 +54,7 @@ endif
 # we use start group and end group because usbotghs and usbctrl have inter
 # dependencies, requiring the linker to resolve their respective symbols
 # each time
-LD_LIBS += -Wl,--start-group -Wl,-l$(BACKEND_DRV) -Wl,-lusbctrl -Wl,-lusbhid -Wl,-lhmac -Wl,-lctap -Wl,-lsign -Wl,-lstd -Wl,--end-group
+LD_LIBS += -Wl,--start-group -Wl,-l$(BACKEND_DRV) -Wl,-lusbctrl -Wl,-lusbhid -Wl,-lhmac -Wl,-lctap -Wl,-lsign -Wl,-lstd -Wl,-lu2f2 -Wl,--end-group
 
 ###################################################################
 # okay let's list our source files and generated files now
@@ -91,6 +91,7 @@ LIBDEP := $(BUILD_DIR)/libs/libstd/libstd.a \
 		  $(BUILD_DIR)/libs/libusbctrl/libusbctrl.a \
 		  $(BUILD_DIR)/libs/libhmac/libhmac.a \
 		  $(BUILD_DIR)/libs/libctap/libctap.a \
+          $(BUILD_DIR)/libs/libu2f2/libu2f2.a \
 		  $(BUILD_DIR)/externals/libsign.a
 
 
