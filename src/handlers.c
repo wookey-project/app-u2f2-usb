@@ -31,7 +31,7 @@ mbed_error_t handle_wink(uint16_t timeout_ms)
     /* syncrhonously send wink request */
     msgsnd(fido_msq, &msgbuf, 0, 0);
     /* and wait for response */
-    msgrcv(fido_msq, &msgbuf.mtext, msgsz, MAGIC_ACKNOWLEDGE, 0);
+    msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_ACKNOWLEDGE, 0);
 
     return errcode;
 }
@@ -86,9 +86,9 @@ mbed_error_t u2fapdu_handle_cmd(uint32_t metadata, uint8_t *buf, uint16_t buf_le
     /* APDU request fully send... */
 
     /* get back APDU response */
-    msgrcv(fido_msq, &msgbuf.mtext, msgsz, MAGIC_APDU_RESP_INIT, 0);
+    msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_APDU_RESP_INIT, 0);
     log_printf("[USB] received APDU_RESP_INIT from Fido\n");
-    msgrcv(fido_msq, &msgbuf.mtext, msgsz, MAGIC_APDU_RESP_MSG_LEN, 0);
+    msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_APDU_RESP_MSG_LEN, 0);
     log_printf("[USB] received APDU_RESP_MSG_LEN from Fido\n");
 
     /* FIXME: use u16 instead of u32 */
@@ -99,19 +99,19 @@ mbed_error_t u2fapdu_handle_cmd(uint32_t metadata, uint8_t *buf, uint16_t buf_le
     offset = 0;
 
     for (i = 0; i < num_full_msg; ++i) {
-        ret = msgrcv(fido_msq, &msgbuf.mtext, msgsz, MAGIC_APDU_RESP_MSG, 0);
+        ret = msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_APDU_RESP_MSG, 0);
         log_printf("[USB] received APDU_RESP_MSG (pkt %d) from Fido\n", i);
         memcpy(&resp[offset], &msgbuf.mtext.u8[0], msgsz);
         offset += msgsz;
     }
     if (residual_msg) {
-        ret = msgrcv(fido_msq, &msgbuf.mtext, residual_msg, MAGIC_APDU_RESP_MSG, 0);
+        ret = msgrcv(fido_msq, &msgbuf, residual_msg, MAGIC_APDU_RESP_MSG, 0);
         log_printf("[USB] received APDU_RESP_MSG (pkt %d, residual, %d bytes) from Fido\n", i, ret);
         memcpy(&resp[offset], &msgbuf.mtext.u8[0], residual_msg);
         offset += residual_msg;
     }
     /* received overall APDU response from APDU/FIDO backend, get back return value */
-    ret = msgrcv(fido_msq, &msgbuf.mtext, 1, MAGIC_CMD_RETURN, 0);
+    ret = msgrcv(fido_msq, &msgbuf, 1, MAGIC_CMD_RETURN, 0);
 
     errcode = msgbuf.mtext.u8[0];
     log_printf("[USB] received errcode %x from Fido\n", errcode);
