@@ -89,10 +89,10 @@ mbed_error_t u2fapdu_handle_cmd(uint32_t metadata, uint8_t *buf, uint16_t buf_le
     msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_APDU_RESP_INIT, 0);
     log_printf("[USB] received APDU_RESP_INIT from Fido\n");
     msgrcv(fido_msq, &msgbuf, msgsz, MAGIC_APDU_RESP_MSG_LEN, 0);
-    log_printf("[USB] received APDU_RESP_MSG_LEN from Fido\n");
+    log_printf("[USB] received APDU_RESP_MSG_LEN from Fido, %d bytes\n", msgbuf.mtext.u16[0]);
 
     /* FIXME: use u16 instead of u32 */
-    *resp_len = (uint16_t)msgbuf.mtext.u32[0];
+    *resp_len = msgbuf.mtext.u16[0];
 
     num_full_msg = *resp_len / 64;
     residual_msg = *resp_len % 64;
